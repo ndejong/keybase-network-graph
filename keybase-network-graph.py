@@ -5,8 +5,7 @@ import json
 import time
 import argparse
 import requests
-from pygraphml import Graph
-from pygraphml import GraphMLParser
+import pygraphml
 from bs4 import BeautifulSoup
 
 
@@ -43,7 +42,7 @@ class KeybaseNetworkGraph:
         self.max_depth = self.args.depth
 
         if self.args.nograph is False:
-            self.graph = Graph()
+            self.graph = pygraphml.Graph()
 
         uid = self.args.uid
         while uid is not None:
@@ -52,7 +51,7 @@ class KeybaseNetworkGraph:
             uid = self.find_next_uid()
 
         if self.graph is not None:
-            graph_parser = GraphMLParser()
+            graph_parser = pygraphml.GraphMLParser()
             graph_filename = os.path.join(self.data_path, self.args.uid + '.graphml')
             graph_parser.write(self.graph, graph_filename)
             self.out('GraphML file: {}'.format(graph_filename))
@@ -88,9 +87,16 @@ class KeybaseNetworkGraph:
         if 'graph_node' in self.data[uid]:
             self.data[uid]['graph_node']['username'] = self.data[uid]['username']
 
-        followers_added = 0
         followers, self.data[uid]['followers'] = self.get_followers(uid, datastore=use_datastore)
-        for follower_uid in followers['uids_flattened']:
+        followers_added = self.process_followers(uid, followers['uids_followers'], direction='in')
+        followers_added += self.process_followers(uid, followers['uids_following'], direction='out')
+
+        self.out('complete:{} followers_added:{}'.format(uid, followers_added))
+        self.out('===')
+
+    def process_followers(self, uid, followers, direction):
+        followers_added = 0
+        for follower_uid in followers:
             if follower_uid not in self.data:
                 self.data[follower_uid] = {}
                 followers_added += 1
@@ -99,10 +105,15 @@ class KeybaseNetworkGraph:
             if 'graph_node' not in self.data[follower_uid] and self.graph is not None:
                 self.data[follower_uid]['graph_node'] = self.graph.add_node(follower_uid)
             if self.graph is not None:
-                self.graph.add_edge(self.data[uid]['graph_node'], self.data[follower_uid]['graph_node'])
-
-        self.out('complete:{} followers_added:{}'.format(uid, followers_added))
-        self.out('===')
+                if direction == 'out':
+                    self.graph.add_edge(self.data[uid]['graph_node'], self.data[follower_uid]['graph_node'],
+                                        directed=True)
+                elif direction == 'in':
+                        self.graph.add_edge(self.data[follower_uid]['graph_node'], self.data[uid]['graph_node'],
+                                            directed=True)
+                else:
+                    raise KeybaseNetworkGraphException('unexpected direction')
+        return followers_added
 
     def get_uid_datapath(self, uid, make_path=False):
         path = os.path.join(self.data_path, uid[0:2], uid[2:4])
@@ -124,16 +135,17 @@ class KeybaseNetworkGraph:
 
         data = {
             'followers': self.request_followers(uid=uid, reverse=0),
+            'uids_followers': [],
             'following': self.request_followers(uid=uid, reverse=1),
-            'uids_flattened': [],
+            'uids_following': [],
             'timestamp': int(time.time()),
         }
 
-        data['uids_flattened'].extend([
-            d['uid'] for d in data['followers'] if ('uid' in d and d['uid'] not in data['uids_flattened'])
+        data['uids_followers'].extend([
+            d['uid'] for d in data['followers'] if ('uid' in d and d['uid'] not in data['uids_followers'])
         ])
-        data['uids_flattened'].extend([
-            d['uid'] for d in data['following'] if ('uid' in d and d['uid'] not in data['uids_flattened'])
+        data['uids_following'].extend([
+            d['uid'] for d in data['following'] if ('uid' in d and d['uid'] not in data['uids_following'])
         ])
 
         if datastore is True:
