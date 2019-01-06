@@ -76,7 +76,7 @@ sudo update-alternatives --config javac
 sudo update-alternatives --config java
 ```
 
-### Gephi Visualization Samples
-![screenshot_182742.png](assets/screenshot_182742.png)
-
+### Gephi Visualization Samples of Keybase networks
 ![screenshot_183251.png](assets/screenshot_183251.png)
+
+![screenshot_182742.png](assets/screenshot_182742.png)
