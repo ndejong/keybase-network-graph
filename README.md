@@ -77,6 +77,6 @@ sudo update-alternatives --config java
 ```
 
 ### Gephi Visualization Samples of Keybase networks
-![screenshot_183251.png](assets/screenshot_183251.png)
+![screenshot_074349.png](assets/screenshot_074349.png)
 
-![screenshot_182742.png](assets/screenshot_182742.png)
+![screenshot_075321.png](assets/screenshot_075321.png)
