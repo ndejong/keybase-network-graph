@@ -29,7 +29,7 @@ processing:96ef480ac888bdff3ecb2a8f6e368b00 depth:1 uid_total:326
 complete:96ef480ac888bdff3ecb2a8f6e368b00 followers_added:0
 
 GraphML file: /tmp/keybase-network-graph/3195b4ddeb6f4c4250ab2b5ff7c68b19.graphml
-```  
+```
 
 ### Command Line Arguments
 ```commandline
@@ -77,6 +77,9 @@ sudo update-alternatives --config java
 ```
 
 ### Gephi Visualization Samples of Keybase networks
+![screenshot_101043.png](assets/screenshot_101043.png)
+
 ![screenshot_074349.png](assets/screenshot_074349.png)
 
 ![screenshot_075321.png](assets/screenshot_075321.png)
+
